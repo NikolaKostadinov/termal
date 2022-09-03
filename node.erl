@@ -28,6 +28,8 @@ init(InitTemp, Bound) ->
 	%% start a thermal node with boundaries
 	%% Bound must be: [ { Dir, Pid }, ... ]
 
+	[ P ! { dev, { changebound, { dir:inv(D), self() } } } || { D, P } <- Bound ],
+
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
 	loop({ Temp, { bound, Bound } }).
@@ -43,8 +45,7 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	%% 		{ down, PID },
 	%% 		{ left, PID },
 	%% 		{ right, PID } 
-	%% 	] },
-	%% 	{ cache, CACHE }
+	%% 	] }
 	%% }
 
 	UpTuple = lists:keyfind(up, 1, Bound),
@@ -60,6 +61,18 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	if not RightTuple -> Right = none; true -> { right, Right } = RightTuple end,
 
 	receive
+
+		{ dev, { newstate, NewStateReq } } -> NewState = NewStateReq;
+
+		{ dev, { newtemp, NewTemp } } -> NewState = { { temp, NewTemp }, { bound, Bound } };
+
+		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound } };
+
+		{ dev, { changebound, { Dir, NewPid } } } ->
+
+			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
+
+			NewState = { { temp, Temp }, { bound, NewBound } };
 
 		{ dev, log } ->
 
