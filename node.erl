@@ -3,7 +3,7 @@
 
 start(InitTemp) ->
 	
-	%% start a thermal node with no boundares 
+	%% start a thermal node with no boundaries  
 
 	spawn(?MODULE, init, [ InitTemp ]).
 
@@ -16,7 +16,7 @@ start(InitTemp, Bound) ->
 
 init(InitTemp) ->
 
-	%% initate a thermal node process with no boundares
+	%% initate a thermal node process with no boundaries
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Bound = { bound, [ { up, none }, { down, none }, { left, none }, { right, none } ] },
@@ -25,7 +25,7 @@ init(InitTemp) ->
 
 init(InitTemp, Bound) ->
 
-	%% start a thermal node with boundares
+	%% start a thermal node with boundaries
 	%% Bound must be: [ { Dir, Pid }, ... ]
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
