@@ -81,9 +81,20 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			%%        |
 			%%       ( )
 
-			io:format("      ~p~n      |~n", [ Up ]),
-			io:format("~p - ~p - ~p~n", [ Left, self(), Right ]),
-			io:format("      ~p~n      |~n", [ Down ]),
+			if Up =/= none -> UpTemp = Up ! { self(), temp }; true -> UpTemp = none end,
+			if Down =/= none -> DownTemp = Down ! { self(), temp }; true -> DownTemp = none end,
+			if Left =/= none -> LeftTemp = Left ! { self(), temp }; true -> LeftTemp = none end,
+			if Right =/= none -> RightTemp = Right ! { self(), temp }; true -> RightTemp = none end,
+
+			io:format("      ( ~p )~n      |~n", [ UpTemp ]),
+			io:format("( ~p ) - ( ~p ) - ( ~p )~n", [ LeftTemp, self(), RightTemp ]),
+			io:format("      ( ~p )~n      |~n", [ DownTemp ]),
+
+			NewState = State;
+
+		{ Client, temp } ->
+
+			Client ! Temp,
 
 			NewState = State;
 
