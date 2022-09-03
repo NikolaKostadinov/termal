@@ -15,4 +15,10 @@ init() ->
 
 loop() ->
 
+	%% STATE:
+	%% {
+	%% 	{ diff, COEF },
+	%% 	{ nodes, [ PID... ] }
+	%% }
+
 	loop().

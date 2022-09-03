@@ -28,7 +28,7 @@ init(InitTemp, Bound) ->
 	%% start a thermal node with boundaries
 	%% Bound must be: [ { Dir, Pid }, ... ]
 
-	[ P ! { dev, { changebound, { dir:inv(D), self() } } } || { D, P } <- Bound ],
+	[ P ! { dev, { changebound, { dir:inv(D), self() } } } || { D, P } <- Bound, is_pid(P) ],
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
@@ -69,10 +69,22 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound } };
 
 		{ dev, { changebound, { Dir, NewPid } } } ->
+			
+			io:format(":: ~p ::~n", [self()]),
 
 			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
 
+			io:format("::> ~p~n", [NewBound]),
 			NewState = { { temp, Temp }, { bound, NewBound } };
+
+		{ dev, pos } ->
+
+			if Left =/= none -> Left ! { self(), { myposx, 1 } }, receive { yourposx, NX } -> X = NX end; true -> X = 0 end,
+			if Up =/= none -> Up ! { self(), { myposy, 1 } }, receive { yourposy, NY } -> Y = NY end; true -> Y = 0 end,
+
+			io:format("(~p; ~p)~n", [ X, Y ]),
+
+			NewState = State;
 
 		{ dev, log } ->
 
@@ -109,6 +121,18 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 		{ Client, temp } when is_pid(Client) ->
 
 			Client ! { self(), { temp, Temp } },
+
+			NewState = State;
+
+		{ Client, { myposx, N } } when is_pid(Client) ->
+			
+			if Left =/= none -> Left ! { Client, { myposx, N + 1 } }; true -> Client ! { yourposx, N } end,
+
+			NewState = State;
+
+		{ Client, { myposy, N } } when is_pid(Client) ->
+
+			if Up =/= none -> Up ! { Client, { myposy, N + 1 } }; true -> Client ! { yourposy, N } end,
 
 			NewState = State;
 
