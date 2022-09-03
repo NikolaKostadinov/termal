@@ -43,7 +43,8 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	%% 		{ down, PID },
 	%% 		{ left, PID },
 	%% 		{ right, PID } 
-	%% 	] } 
+	%% 	] },
+	%% 	{ cache, CACHE }
 	%% }
 
 	UpTuple = lists:keyfind(up, 1, Bound),
@@ -81,20 +82,20 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			%%        |
 			%%       ( )
 
-			if Up =/= none -> UpTemp = Up ! { self(), temp }; true -> UpTemp = none end,
-			if Down =/= none -> DownTemp = Down ! { self(), temp }; true -> DownTemp = none end,
-			if Left =/= none -> LeftTemp = Left ! { self(), temp }; true -> LeftTemp = none end,
-			if Right =/= none -> RightTemp = Right ! { self(), temp }; true -> RightTemp = none end,
+			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = '' end,
+			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = '' end,
+			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = '' end,
+			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = '' end,
 
-			io:format("      ( ~p )~n      |~n", [ UpTemp ]),
-			io:format("( ~p ) - ( ~p ) - ( ~p )~n", [ LeftTemp, self(), RightTemp ]),
-			io:format("      ( ~p )~n      |~n", [ DownTemp ]),
+			io:format("      (~p°K)~n         |~n", [ UpTemp ]),
+			io:format("(~p°K) - (~p°K) - (~p°K)~n", [ LeftTemp, Temp, RightTemp ]),
+			io:format("         |~n      (~p°K)~n", [ DownTemp ]),
 
 			NewState = State;
 
-		{ Client, temp } ->
+		{ Client, temp } when is_pid(Client) ->
 
-			Client ! Temp,
+			Client ! { self(), { temp, Temp } },
 
 			NewState = State;
 
