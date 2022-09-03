@@ -1,14 +1,36 @@
 -module(node).
--export([ start/1, init/1 ]).
+-export([ start/1, init/1, start/2, init/2 ]).
 
-start(InitTemp) -> spawn(?MODULE, init, [ InitTemp ]).
+start(InitTemp) ->
+	
+	%% start a thermal node with no boundares 
+
+	spawn(?MODULE, init, [ InitTemp ]).
+
+start(InitTemp, Bound) ->
+
+	%% start a thermal node with boundares
+	%% Bound must be: [ { Dir, Pid }, ... ]
+	
+	spawn(?MODULE, init, [ InitTemp, Bound ]).
 
 init(InitTemp) ->
+
+	%% initate a thermal node process with no boundares
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Bound = { bound, [ { up, none }, { down, none }, { left, none }, { right, none } ] },
 	Temp = { temp, InitTemp },
 	loop({ Temp, Bound }).
+
+init(InitTemp, Bound) ->
+
+	%% start a thermal node with boundares
+	%% Bound must be: [ { Dir, Pid }, ... ]
+
+	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
+	Temp = { temp, InitTemp },
+	loop({ Temp, { bound, Bound } }).
 
 loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	
@@ -24,10 +46,17 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	%% 	] } 
 	%% }
 
-	{ up, Up } = lists:keyfind(up, 1, Bound),
-	{ down, Down } = lists:keyfind(down, 1, Bound),
-	{ left, Left } = lists:keyfind(left, 1, Bound),
-	{ right, Right } = lists:keyfind(right, 1, Bound),
+	UpTuple = lists:keyfind(up, 1, Bound),
+	if not UpTuple -> Up = none; true -> { up, Up } = UpTuple end,
+
+	DownTuple = lists:keyfind(down, 1, Bound),
+	if not DownTuple -> Down = none; true -> { down, Down } = DownTuple end,
+
+	LeftTuple = lists:keyfind(left, 1, Bound),
+	if not LeftTuple -> Left = none; true -> { left, Left } = LeftTuple end,
+
+	RightTuple = lists:keyfind(right, 1, Bound),
+	if not RightTuple -> Right = none; true -> { right, Right } = RightTuple end,
 
 	receive
 
@@ -41,6 +70,20 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			io:format("left node: ~p~n", [ Left ]),
 			io:format("right node: ~p~n", [ Right ]),
 			io:format("====================~n"),
+
+			NewState = State;
+		
+		{ dev, vlog } ->
+
+			%%       ( )
+			%%        |
+			%% ( ) - ( ) - ( )
+			%%        |
+			%%       ( )
+
+			io:format("      ~p~n      |~n", [ Up ]),
+			io:format("~p - ~p - ~p~n", [ Left, self(), Right ]),
+			io:format("      ~p~n      |~n", [ Down ]),
 
 			NewState = State;
 
