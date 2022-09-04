@@ -1,11 +1,11 @@
 -module(bigbrother).
 -export([ start/0, start/1, init/1 ]).
 
-start(Coef) when is_number(Coef), Coef > 0 ->
+start(Material) when is_atom(Material) ->
 
 	%% start the supervisor process with an arbitrary diffusivity
 
-	spawn(?MODULE, init, [ Coef ]);
+	spawn(?MODULE, init, [ Material ]);
 
 start(_) -> error(badarg).
 
@@ -13,13 +13,20 @@ start() ->
 
 	%% start the supervisor process with no diffusivity
 	
-	spawn(?MODULE, init, [ 1 ]).
+	spawn(?MODULE, init, [ iron ]).
 
-init(Coef) ->
+init(Material) ->
 	
 	%% initate the supervisor loop
 
+	Coef = materials:coef(Material), 
 	State = { { diff, Coef }, { nodes, [ ] } },
+
+	io:format("====================~n"),
+	io:format("Big Brother: ~p started~n", [ self() ]),
+	io:format("material: ~p~n", [ Material ]),
+	io:format("diffusity: ~p mm^2/s~n", [ Coef ]),
+	io:format("====================~n"),
 
 	loop(State).
 
@@ -38,6 +45,12 @@ loop({ { diff, Coef }, { nodes, Nodes } } = State) ->
 			NewNodes = nodefuns:beam(TempList),
 			
 			NewState = { { diff, Coef }, { nodes, NewNodes } };
+		
+		{ Client, diff } ->
+
+			Client ! { self(), { diff, Coef } },
+
+			NewState = State;
 
 		Any ->
 
@@ -46,5 +59,7 @@ loop({ { diff, Coef }, { nodes, Nodes } } = State) ->
 			NewState = State
 
 	end,
+
+	[ link(N) || N <- Nodes ],
 
 	loop(NewState).
