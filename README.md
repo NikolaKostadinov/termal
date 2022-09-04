@@ -26,6 +26,8 @@ The Laplacian operator can be calculated like this:
 
 $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - 4T \right) $$
 
+where $\sum{\partial T}$ means *the sum of its neighbors*.
+
 ## The Setup
 
 The **TPLS** is build for Linux. It can be used on other OS, but you have to configure it manualy. Firstly, pull the source code. Then run the ``compiler.sh`` script:
