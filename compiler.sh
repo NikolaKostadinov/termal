@@ -1,5 +1,11 @@
-erlc -W0 dir.erl
-erlc -W0 node.erl
-erlc -W0 bigbrother.erl
+for FILE in *
+do
+	
+	if [[ $FILE == *.erl ]]
+	then
+		erlc -W0 $FILE
+	fi
+
+done
 
 echo "TPLS compiled"
