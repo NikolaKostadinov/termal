@@ -14,9 +14,17 @@ In the schemes every node is represented by a circle. The lines are logical conn
 
 <img src="./assets/lattice.svg">
 
-Every node knows its neighbors.
+Every node knows its temperature and neighbors:
 
 <img src="./assets/node.svg">
+
+For time evolution, the node has to request the temperatures of its neighbors, the thermal diffusivity of the supervisor, and calcutate the next temperature via the **heat equation**:
+
+$$ \Delta T = \alpha \nabla^2 T \Delta t $$
+
+The Laplacian operator can be calculated like this:
+
+$$ \nabla^2 T = \frac{\sum_{neighbors}T - 4T}{\Delta x^2} $$
 
 ## The Setup
 
