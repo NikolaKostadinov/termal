@@ -24,7 +24,7 @@ $$ \Delta T = \alpha \nabla^2 T \Delta t $$
 
 The Laplacian operator can be calculated like this:
 
-$$ \nabla^2 T = \frac{\sum{neighbors}T - 4T}{\Delta x^2} $$
+$$ \nabla^2 T = \frac{\sum^{neighbors}T - 4T}{\Delta x^2} $$
 
 ## The Setup
 
