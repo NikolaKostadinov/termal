@@ -32,7 +32,13 @@ loop({ { diff, Coef }, { nodes, Nodes } } = State) ->
 	%% }
 
 	receive
-	
+		
+		{ dev, { start, { beam, TempList } } } ->
+
+			NewNodes = nodefuns:beam(TempList),
+			
+			NewState = { { diff, Coef }, { nodes, NewNodes } };
+
 		Any ->
 
 			io:format("Big Brother received undefined: ~p~n", [ Any ]),
