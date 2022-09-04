@@ -22,11 +22,15 @@ For time evolution, the node has to request the temperatures of its neighbors, t
 
 $$ \Delta T = \alpha \nabla^2 T \Delta t $$
 
-The Laplacian operator can be calculated like this:
+The **Laplacian** operator can be calculated like this:
 
 $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - 4T \right) $$
 
 where $\sum{\partial T}$ means *the sum of its neighbors*.
+
+>> Note: This is not a generalized formula for the Laplacian. For the general case let $n \left(\partial T \right)$ be the number of neighbors. Then the general Laplacian is:
+>>
+>> $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - n \left( \partial T \right) T \right) $$
 
 ## The Setup
 
