@@ -70,11 +70,8 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 
 		{ dev, { changebound, { Dir, NewPid } } } ->
 			
-			io:format(":: ~p ::~n", [self()]),
-
 			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
 
-			io:format("::> ~p~n", [NewBound]),
 			NewState = { { temp, Temp }, { bound, NewBound } };
 
 		{ dev, pos } ->
@@ -107,10 +104,12 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			%%        |
 			%%       ( )
 
-			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = '' end,
-			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = '' end,
-			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = '' end,
-			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = '' end,
+			Empty = n,
+
+			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = Empty end,
+			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = Empty end,
+			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = Empty end,
+			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = Empty end,
 
 			io:format("      (~p°K)~n         |~n", [ UpTemp ]),
 			io:format("(~p°K) - (~p°K) - (~p°K)~n", [ LeftTemp, Temp, RightTemp ]),
@@ -138,7 +137,7 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 
 		Any ->
 
-			io:format("~p is undefined for ~p~n", [ Any, self() ]),
+			io:format("~p is undefined for node: ~p~n", [ Any, self() ]),
 
 			NewState = State
 
