@@ -42,21 +42,34 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 	receive
 		
 		{ dev, { start, { beam, TempList } } } ->
-
-			NewNodes = nodefuns:beam(TempList),
 			
+			[ unlink(N) || N <- Nodes ],
+			NewNodes = nodefuns:beam(TempList),
+			[ link(N) || N <- NewNodes ],
+			[ N ! { self(), supervise } || N <- Nodes ],
+
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 		
 		{ dev, { start, { sheet, TempMatrix } } } ->
 
+			[ unlink(N) || N <- Nodes ],
 			NodeMatrix = nodefuns:sheet(TempMatrix),
 			NewNodes = lists:flatten(NodeMatrix),
+			[ link(N) || N <- NewNodes ],
+			[ N ! { self(), supervise } || N <- Nodes ],
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 
-		{ Client, diff } when is_pid(Client) ->
+		{ dev, { evolve, DT } } ->
 
-			Client ! { self(), { diff, Coef } },
+			[ Origin | _ ] = Nodes,
+			Origin ! { self(), { evolve, { { dir, left }, { dt, DT } } } },
+
+			NewState = State;
+
+		{ Client, diff, dx } when is_pid(Client) ->
+
+			Client ! { self(), { { diff, Coef }, { dx, DX } } },
 
 			NewState = State;
 
@@ -67,7 +80,5 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			NewState = State
 
 	end,
-
-	[ link(N) || N <- Nodes ],
 
 	loop(NewState).

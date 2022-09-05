@@ -21,7 +21,7 @@ init(InitTemp) ->
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Bound = { bound, [ { up, none }, { down, none }, { left, none }, { right, none } ] },
 	Temp = { temp, InitTemp },
-	loop({ Temp, Bound }).
+	loop({ Temp, Bound, { supervisor, none } }).
 
 init(InitTemp, Bound) ->
 
@@ -32,9 +32,9 @@ init(InitTemp, Bound) ->
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
-	loop({ Temp, { bound, Bound } }).
+	loop({ Temp, { bound, Bound }, { supervisor, none } }).
 
-loop({ { temp, Temp }, { bound, Bound } } = State) ->
+loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 	
 	%% STATE:
 	%%
@@ -45,28 +45,19 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 	%% 		{ down, PID },
 	%% 		{ left, PID },
 	%% 		{ right, PID } 
-	%% 	] }
+	%% 	] },
+	%% 	{ supervisor, BB }
 	%% }
 
-	UpTuple = lists:keyfind(up, 1, Bound),
-	if not UpTuple -> Up = none; true -> { up, Up } = UpTuple end,
-
-	DownTuple = lists:keyfind(down, 1, Bound),
-	if not DownTuple -> Down = none; true -> { down, Down } = DownTuple end,
-
-	LeftTuple = lists:keyfind(left, 1, Bound),
-	if not LeftTuple -> Left = none; true -> { left, Left } = LeftTuple end,
-
-	RightTuple = lists:keyfind(right, 1, Bound),
-	if not RightTuple -> Right = none; true -> { right, Right } = RightTuple end,
+	{ Up, Down, Left, Right } = nodefuns:decomp_bound(Bound),
 
 	receive
 
 		{ dev, { newstate, NewStateReq } } -> NewState = NewStateReq;
 
-		{ dev, { newtemp, NewTemp } } -> NewState = { { temp, NewTemp }, { bound, Bound } };
+		{ dev, { newtemp, NewTemp } } -> NewState = { { temp, NewTemp }, { bound, Bound }, { supervisor, BB } };
 
-		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound } };
+		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
 
 		{ dev, { changebound, { Dir, NewPid } } } ->
 			
@@ -74,13 +65,13 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			
 			NewPid ! { dev, { changebound_only, { dir:inv(Dir), self() } } },
 
-			NewState = { { temp, Temp }, { bound, NewBound } };
+			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
 
 		{ dev, { changebound_only, { Dir, NewPid } } } ->
 
 			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
 			
-			NewState = { { temp, Temp }, { bound, NewBound } };
+			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
 
 		{ dev, pos } ->
 
@@ -130,6 +121,14 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 			Client ! { self(), { temp, Temp } },
 
 			NewState = State;
+
+		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client } };
+
+		{ Client, { evolve, { { dir, Dir }, { dt, DT } } } } when is_pid(Client) ->
+
+			%% HEAT EQUATION
+			
+			NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB } };
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			
