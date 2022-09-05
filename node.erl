@@ -124,21 +124,42 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client } };
 
-		{ Client, { evolve, { { dir, Dir }, { dt, DT } } } } when is_pid(Client) ->
+		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
 
-			%% HEAT EQUATION
-			
-			NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB } };
+			%% heat equation calc tour
+
+			BB ! { self(), diff, dx },
+			receive { BB, R } -> Response = R end,
+
+			InvDir = dir:inv(Dir),
+			InvTuple = lists:keyfind(InvDir, 1, Bound),
+			if
+				not InvTuple -> { InvDir, NextNode } = InvTuple, NextDir = Dir;
+				true -> NextNode = Down, NextDir = InvDir
+			end,
+
+			if
+				NextNode =/= none -> NextNode ! { BB, { elolve, { { dir, NextDir }, { dt, DT } } } };
+				true -> BB ! { self(), done }
+			end,
+
+			NewState = nodefuns:heatequation(State, Response, DT);
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			
-			if Left =/= none -> Left ! { Client, { myposx, N + 1 } }; true -> Client ! { yourposx, N } end,
+			if
+				Left =/= none -> Left ! { Client, { myposx, N + 1 } };
+				true -> Client ! { yourposx, N }
+			end,
 
 			NewState = State;
 
 		{ Client, { myposy, N } } when is_pid(Client) ->
 
-			if Up =/= none -> Up ! { Client, { myposy, N + 1 } }; true -> Client ! { yourposy, N } end,
+			if
+				Up =/= none -> Up ! { Client, { myposy, N + 1 } };
+				true -> Client ! { yourposy, N }
+			end,
 
 			NewState = State;
 

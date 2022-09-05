@@ -20,7 +20,7 @@ decomp_bound(Bound) ->
 heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
 
-	{ Up, Down, Left, Right } = nodefuns:decomp_bound(Bound),
+	{ Up, Down, Left, Right } = decomp_bound(Bound),
 
 	if
 		Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT, UC = 1 end;

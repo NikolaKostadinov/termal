@@ -64,6 +64,8 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 			[ Origin | _ ] = Nodes,
 			Origin ! { self(), { evolve, { { dir, left }, { dt, DT } } } },
+			
+			receive { _, done } -> ok end,
 
 			NewState = State;
 

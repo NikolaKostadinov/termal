@@ -1,4 +1,4 @@
--module(ther).
+-module(therm).
 -compile(export_all).
 
 basis(Start, DX, End) when is_number(Start), is_float(DX), is_number(End) ->
