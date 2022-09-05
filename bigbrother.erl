@@ -46,7 +46,7 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			[ unlink(N) || N <- Nodes ],
 			NewNodes = nodefuns:beam(TempList),
 			[ link(N) || N <- NewNodes ],
-			[ N ! { self(), supervise } || N <- Nodes ],
+			[ N ! { self(), supervise } || N <- NewNodes ],
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 		
@@ -56,7 +56,7 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			NodeMatrix = nodefuns:sheet(TempMatrix),
 			NewNodes = lists:flatten(NodeMatrix),
 			[ link(N) || N <- NewNodes ],
-			[ N ! { self(), supervise } || N <- Nodes ],
+			[ N ! { self(), supervise } || N <- NewNodes ],
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 

@@ -86,6 +86,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 			io:format("====================~n"),
 			io:format("thermal node PID: ~p~n", [ self() ]),
+			io:format("supervisor: ~p~n", [ BB ]),
 			io:format("temperature: ~p °K~n", [ Temp ]),
 			io:format("upper node: ~p~n", [ Up ]),
 			io:format("lower node: ~p~n", [ Down ]),
@@ -134,8 +135,8 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 			InvDir = dir:inv(Dir),
 			InvTuple = lists:keyfind(InvDir, 1, Bound),
 			if
-				not InvTuple -> { InvDir, NextNode } = InvTuple, NextDir = Dir;
-				true -> NextNode = Down, NextDir = InvDir
+				not InvTuple -> { InvDir, NextNode } = InvTuple, NextDir = Dir;		%% invert direction
+				true -> NextNode = Down, NextDir = InvDir	%% going down otherwise
 			end,
 
 			if
