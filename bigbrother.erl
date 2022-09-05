@@ -54,7 +54,7 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 
-		{ Client, diff } ->
+		{ Client, diff } when is_pid(Client) ->
 
 			Client ! { self(), { diff, Coef } },
 
