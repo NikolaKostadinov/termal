@@ -1,6 +1,6 @@
 # **TPLS**: Thermal Process Lattice Simulator
 
-## The Idea:
+## The Idea
 
 The **TPLS** is an physical simulator runing on top of Erlang. It is based on discretizing the **heat equation**:
 
@@ -8,7 +8,7 @@ $$ \frac{\partial T}{\partial t} = \alpha \nabla^2 T $$
 
 The **TPLS** uses a **lattice** of erlang **processes** (*shortly: nodes*) which exchange messages. All nodes are supervized by *"Big Brother"* who prevents premature crashes. 
 
-## The Scheme:
+## The Scheme
 
 In the schemes every node is represented by a circle. The lines are logical connections. This is how the lattice looks like:
 
@@ -42,3 +42,50 @@ $ ./compiler.sh
 ```
 
 This script compiles every erlang module in the repository. Now, you can open the erlang shell with the ``erl`` command and use the ``node`` and ``bigbrother`` modules.
+
+## The Simulator
+
+Let's build a simulation. Firstly, we will initialize an "empty" ``bigbrother`` process:
+
+```erlang
+BB = bigbrother:start().
+```
+
+By default the material of the system is set to iron. You can change it by passing the name of the material as an argument to the ``bigbrother:start/1`` function:
+
+```erlang
+Material = gold,
+BB = bigbrother:start(Material).
+```
+
+For simplisity we will simulate how the temperature of a beam evolves. Let's create a basis. It will begin in $x = -1$ and it will end in $x = 1$. We will use &\Delta x = 0.1&:
+
+```erlang
+Start = -1,
+End = 1,
+DX = 0.1,
+
+X = therm:basis(Start, DX, End).
+```
+
+Let's use $T \left(x\right) = 20 e^{-x^2} + 300$. To get the temperatures of the beam, we will use ``therm:beam/2`` function:
+
+```erlang
+F = fun (X) -> 20 * math:exp( - X * X ) + 300 end,
+T = therm:beam(F, X).
+```
+
+Now let's create the processes. We will message the ``bigbrother`` process as developers:
+
+```erlang
+BB ! { dev, { start, { beam, T } } }.
+```
+
+Now we are ready to simulate the system. Simply message the supervisor like this:
+
+```erlang
+DT = 0.1,
+BB ! { dev, { evolve, DT } }.
+```
+
+This will evolve the state with $\Delta t = 0.1$ seconds.
