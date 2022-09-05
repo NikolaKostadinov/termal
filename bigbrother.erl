@@ -63,10 +63,8 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		{ dev, { evolve, DT } } ->
 
 			[ Origin | _ ] = Nodes,
-			Origin ! { self(), { evolve, { { dir, left }, { dt, DT } } } },
+			Origin ! { self(), { evolve, { { dir, right }, { dt, DT } } } },
 			
-			receive { _, done } -> ok end,
-
 			NewState = State;
 
 		{ Client, diff, dx } when is_pid(Client) ->

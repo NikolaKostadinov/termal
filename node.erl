@@ -128,23 +128,23 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
 
 			%% heat equation calc tour
-
+			
 			BB ! { self(), diff, dx },
 			receive { BB, R } -> Response = R end,
 
-			InvDir = dir:inv(Dir),
-			InvTuple = lists:keyfind(InvDir, 1, Bound),
+			NewState = nodefuns:heatequation(State, Response, DT),
+			
+			%% continue tour
+			DirTuple = lists:keyfind(Dir, 1, Bound),
 			if
-				not InvTuple -> { InvDir, NextNode } = InvTuple, NextDir = Dir;		%% invert direction
-				true -> NextNode = Down, NextDir = InvDir	%% going down otherwise
+				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);	%% going down
+				true -> { Dir, NextNode } = DirTuple, NextDir = Dir		%% invert direction
 			end,
-
+			
 			if
-				NextNode =/= none -> NextNode ! { BB, { elolve, { { dir, NextDir }, { dt, DT } } } };
-				true -> BB ! { self(), done }
-			end,
-
-			NewState = nodefuns:heatequation(State, Response, DT);
+				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };
+				true -> io:format("~p: DONE~n", [self()])
+			end;
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			

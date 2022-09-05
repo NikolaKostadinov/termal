@@ -22,6 +22,8 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff,
 
 	{ Up, Down, Left, Right } = decomp_bound(Bound),
 
+	io:format("calc starts~n"),
+
 	if
 		Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT, UC = 1 end;
 		true ->	UpTemp = 0, UC = 0
@@ -48,7 +50,9 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff,
 
 	TempChange = Coef * Laplacian * DT, %% the heat equation
 	NewTemp = Temp + TempChange,
-		
+
+	io:format("NT :: ~p~n", [ NewTemp ]),
+
 	{ { temp, NewTemp }, { bound, Bound }, { supervisor, BB } }.
 
 beamlist([ ], BeamList) -> BeamList;
