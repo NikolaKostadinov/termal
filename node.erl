@@ -21,6 +21,7 @@ init(InitTemp) ->
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Bound = { bound, [ { up, none }, { down, none }, { left, none }, { right, none } ] },
 	Temp = { temp, InitTemp },
+
 	loop({ Temp, Bound, { supervisor, none } }).
 
 init(InitTemp, Bound) ->
@@ -28,10 +29,11 @@ init(InitTemp, Bound) ->
 	%% start a thermal node with boundaries
 	%% Bound must be: [ { Dir, Pid }, ... ]
 
-	[ P ! { dev, { changebound, { dir:inv(D), self() } } } || { D, P } <- Bound, is_pid(P) ],
+	[ P ! { dev, { changebound, { dir:inv(D), self() } } } || { D, P } <- Bound, is_pid(P) ],	%% hello neighbors
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
+	
 	loop({ Temp, { bound, Bound }, { supervisor, none } }).
 
 loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
@@ -61,22 +63,35 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 		{ dev, { changebound, { Dir, NewPid } } } ->
 			
-			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
+			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),		%% goodbye old neighbor
 			
-			NewPid ! { dev, { changebound_only, { dir:inv(Dir), self() } } },
+			NewPid ! { dev, { changebound_only, { dir:inv(Dir), self() } } },	%% say hello to the new neighbor
 
 			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
 
 		{ dev, { changebound_only, { Dir, NewPid } } } ->
 
-			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
-			
+			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),		%% goodbye old neighbor, again
+												%% no hello this time
 			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
 
 		{ dev, pos } ->
 
-			if Left =/= none -> Left ! { self(), { myposx, 1 } }, receive { yourposx, NX } -> X = NX end; true -> X = 0 end,
-			if Up =/= none -> Up ! { self(), { myposy, 1 } }, receive { yourposy, NY } -> Y = NY end; true -> Y = 0 end,
+			if
+				Left =/= none ->
+
+					Left ! { self(), { myposx, 1 } },	%% give me my X postition
+					receive { yourposx, NX } -> X = NX end;	%% thank you
+				
+				true -> X = 0					%% I am the origin ?
+			end,
+			if
+				Up =/= none ->
+					Up ! { self(), { myposy, 1 } },		%% give me my Y position
+					receive { yourposy, NY } -> Y = NY end;	%% thanks again
+				
+				true -> Y = 0					%% I am the origin ?
+			end,
 
 			io:format("(~p; ~p)~n", [ X, Y ]),
 
@@ -106,11 +121,13 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 			Empty = n,
 
+			%% the if cluster 2.0
 			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = Empty end,
 			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = Empty end,
 			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = Empty end,
 			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = Empty end,
 
+			%% console art
 			io:format("      (~p°K)~n         |~n", [ UpTemp ]),
 			io:format("(~p°K) - (~p°K) - (~p°K)~n", [ LeftTemp, Temp, RightTemp ]),
 			io:format("         |~n      (~p°K)~n", [ DownTemp ]),
@@ -129,12 +146,12 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 			%% heat equation calc tour
 			
-			BB ! { self(), diff, dx },
-			receive { BB, R } -> Response = R end,
+			BB ! { self(), diff, dx },						%% I have questions, Big Brother
+			receive { BB, R } -> Response = R end,					%% waiting for answers, Big Brother
 
-			NewState = nodefuns:heatequation(State, Response, DT),
+			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
 			
-			%% continue tour
+			%% continue the tour
 			DirTuple = lists:keyfind(Dir, 1, Bound),
 			if
 				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);	%% going down
@@ -143,14 +160,14 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 			
 			if
 				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };
-				true -> io:format("~p: DONE~n", [self()])
+				true -> io:format("DONE~n")
 			end;
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			
 			if
-				Left =/= none -> Left ! { Client, { myposx, N + 1 } };
-				true -> Client ! { yourposx, N }
+				Left =/= none -> Left ! { Client, { myposx, N + 1 } };	%% pass the X position
+				true -> Client ! { yourposx, N }			%% I am the last one
 			end,
 
 			NewState = State;
@@ -158,8 +175,8 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 		{ Client, { myposy, N } } when is_pid(Client) ->
 
 			if
-				Up =/= none -> Up ! { Client, { myposy, N + 1 } };
-				true -> Client ! { yourposy, N }
+				Up =/= none -> Up ! { Client, { myposy, N + 1 } };	%% pass the Y position
+				true -> Client ! { yourposy, N }			%% I am also the last one
 			end,
 
 			NewState = State;

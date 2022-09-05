@@ -7,7 +7,7 @@ basis(Start, DX, End) when is_number(Start), is_float(DX), is_number(End) ->
 
 	Length = End - Start,
 	FloatingDescreteNumber = Length / DX,
-	DescreteNumber = round(FloatingDescreteNumber), %% conversion trick thank you erlang for not having toInt()
+	DescreteNumber = round(FloatingDescreteNumber), %% conversion wizzardary thank you erlang for not having toInt()
 
 	[ Start + N * DX || N <- lists:seq(0, DescreteNumber) ];
 
