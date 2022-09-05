@@ -71,7 +71,15 @@ loop({ { temp, Temp }, { bound, Bound } } = State) ->
 		{ dev, { changebound, { Dir, NewPid } } } ->
 			
 			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
+			
+			NewPid ! { dev, { changebound_only, { dir:inv(Dir), self() } } },
 
+			NewState = { { temp, Temp }, { bound, NewBound } };
+
+		{ dev, { changebound_only, { Dir, NewPid } } } ->
+
+			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),
+			
 			NewState = { { temp, Temp }, { bound, NewBound } };
 
 		{ dev, pos } ->
