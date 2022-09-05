@@ -43,7 +43,7 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff,
 	%% the core
 	Counter = UC + DC + LC + RC,					%% how many neighbors ?
 	BoundarySum = UpTemp + DownTemp + LeftTemp + RightTemp,
-	Laplacian = ( BoundarySum - Counter * Temp ) / ( DX * DX ),	%% aka the inverse triange guy
+	Laplacian = ( BoundarySum - Counter * Temp ) / ( DX * DX ),	%% aka the inverse triangle guy
 
 	TempChange = Coef * Laplacian * DT,				%% the heat equation
 	NewTemp = Temp + TempChange,
