@@ -20,7 +20,7 @@ init(Material) ->
 	%% initate the supervisor loop
 
 	Coef = materials:coef(Material), 
-	State = { { diff, Coef }, { nodes, [ ] } },
+	State = { { diff, Coef }, { dx, 1 }, { nodes, [ ] } },
 
 	io:format("====================~n"),
 	io:format("Big Brother: ~p started~n", [ self() ]),
@@ -30,11 +30,12 @@ init(Material) ->
 
 	loop(State).
 
-loop({ { diff, Coef }, { nodes, Nodes } } = State) ->
+loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 	%% STATE:
 	%% {
 	%% 	{ diff, COEF },
+	%% 	{ dx, DX }
 	%% 	{ nodes, [ PID... ] }
 	%% }
 
@@ -44,8 +45,15 @@ loop({ { diff, Coef }, { nodes, Nodes } } = State) ->
 
 			NewNodes = nodefuns:beam(TempList),
 			
-			NewState = { { diff, Coef }, { nodes, NewNodes } };
+			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 		
+		{ dev, { start, { sheet, TempMatrix } } } ->
+
+			NodeMatrix = nodefuns:sheet(TempMatrix),
+			NewNodes = lists:flatten(NodeMatrix),
+
+			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
+
 		{ Client, diff } ->
 
 			Client ! { self(), { diff, Coef } },

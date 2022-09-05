@@ -17,4 +17,23 @@ beam(TempList) ->
 
 	[ OriginTemp | TempTail ] = TempList,
 	Origin = node:start(OriginTemp),
-	beamlist(TempTail, [ Origin ]).
+	beamlist(TempTail, [ Origin ]).		%% evil recursion
+
+sheetmatrix([ ], NodeMatrix) -> NodeMatrix;
+
+sheetmatrix(TempMatrix, NodeMatrix) ->
+
+	[ HeadTempRow | TailTempRows ] = TempMatrix,
+	LastNodes = lists:last(NodeMatrix),
+
+	TheseNodes = beam(HeadTempRow), 	%% name of the year
+	[ N ! { dev, { change, { up, UN } } } || { N, UN } <- lists:zip(TheseNodes, LastNodes) ], %% brain breaker
+	
+	NewNodeMatrix = NodeMatrix ++ [ TheseNodes ],
+	sheetmatrix(TailTempRows, NewNodeMatrix).
+
+sheet(TempMatrix) ->
+
+	[ FirstTempRow | TailRows ] = TempMatrix,
+	FirstNodes = beam(FirstTempRow),
+	sheetmatrix(TailRows, [ FirstNodes ]).		%% devil recursion
