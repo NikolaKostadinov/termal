@@ -27,7 +27,7 @@ sheetmatrix(TempMatrix, NodeMatrix) ->
 	LastNodes = lists:last(NodeMatrix),
 
 	TheseNodes = beam(HeadTempRow), 	%% name of the year
-	[ N ! { dev, { change, { up, UN } } } || { N, UN } <- lists:zip(TheseNodes, LastNodes) ], %% brain breaker
+	[ N ! { dev, { changebound, { up, UN } } } || { N, UN } <- lists:zip(TheseNodes, LastNodes) ], %% brain breaker
 	
 	NewNodeMatrix = NodeMatrix ++ [ TheseNodes ],
 	sheetmatrix(TailTempRows, NewNodeMatrix).
