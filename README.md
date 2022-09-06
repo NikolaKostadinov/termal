@@ -92,4 +92,4 @@ This will evolve the state with $\Delta t = 0.1$ seconds.
 
 > Note: Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers.
 >
-> $$ 1 >> \Delta t > 0 $$
+> $$ 1 \gg \Delta t > 0 $$
