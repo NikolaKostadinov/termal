@@ -28,7 +28,9 @@ $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - 4T \right) $$
 
 where $\sum{\partial T}$ means *the sum of its neighbors*.
 
-> Note: This is not a generalized formula for the Laplacian. For the general case let $n \left(\partial T \right)$ be the number of neighbors. Then the general Laplacian is:
+> Note:
+>
+> This is not a generalized formula for the Laplacian. For the general case let $n \left(\partial T \right)$ be the number of neighbors. Then the general Laplacian is:
 >
 > $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - n \left( \partial T \right) T \right) $$
 
@@ -68,7 +70,9 @@ DX = 0.1,		% mm
 X = therm:basis(Start, DX, End).
 ```
 
-> Note: The TPLS uses 1 mm as 1 unit length and 1 s for 1 unit time. For temperature the TPLS uses Kelvin. This means that the basis ``X`` starts from -1 mm and ends in 1 mm. The distance between the nodes is 0.1 mm.
+> Note:
+> 
+> The TPLS uses 1 mm as 1 unit length and 1 s for 1 unit time. For temperature the TPLS uses Kelvin. This means that the basis ``X`` starts from -1 mm and ends in 1 mm. The distance between the nodes is 0.1 mm.
 > 
 > I will comment the units of a variable when it is initialized.
 
@@ -96,6 +100,8 @@ BB ! { dev, { evolve, DT } }.
 
 This will evolve the state with $\Delta t = 0.1$ seconds.
 
-> Note: Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers. I case you want more formal warning:
+> Note:
+>
+> Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers. I case you want more formal warning:
 >
 > $$ 1 \gg \Delta t > 0 $$
