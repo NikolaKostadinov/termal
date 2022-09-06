@@ -18,15 +18,15 @@ Every node knows its temperature and neighbors:
 
 <img src="./assets/node.svg">
 
-For time evolution, the node has to request the temperatures of its neighbors, the thermal diffusivity of the supervisor, and calcutate the next temperature via the **heat equation**:
+For time evolution, the node has to request the temperatures of its neighbors, the thermal diffusivity and the basis of the system which are stored in the state of the supervisor and calcutate the next temperature via the **discrete heat equation**:
 
 $$ \Delta T = \alpha \nabla^2 T \Delta t $$
 
-The **Laplacian** operator can be calculated like this:
+Here $\Delta T$ is the change in the temperature of the node. $\alpha$ is the diffusivity of the system. And $\Delta t$ is the time interval. $\nabla^2 T$ is the *Laplacian* of the temperature. It measures how close is the temperaure of the node to the average of its neighbours. The **Laplacian** operator can be calculated like this:
 
 $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - 4T \right) $$
 
-where $\sum{\partial T}$ means *the sum of its neighbors*.
+Where $\sum{\partial T}$ means *the sum of its neighbors*. $\Delta x$ is the distance between the nodes.
 
 > Note:
 >
