@@ -66,8 +66,15 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			Origin ! { self(), { evolve, { { dir, right }, { dt, DT } } } },
 			
 			NewState = State;
+		
+		{ Client, { evolve, done } } when is_pid(Client) ->
 
-		{ Client, diff, dx } when is_pid(Client) ->
+			[ N ! { self(), { cache, reset } } || N <- Nodes ],
+			io:format("DONE~n"),
+
+			NewState = State;
+
+		{ Client, heatrequest } when is_pid(Client) ->
 
 			Client ! { self(), { { diff, Coef }, { dx, DX } } },
 

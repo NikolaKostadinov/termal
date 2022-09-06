@@ -17,26 +17,32 @@ decomp_bound(Bound) ->
 	
 	{ Up, Down, Left, Right }.
 
-heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff, Coef }, { dx, DX } }, DT) ->
+comp_bound(List) ->
 
+	{ Up, Down, Left, Right } = decomp_bound(List),				%% decompose
+	[ { up, Up }, { down, Down }, { left, Left }, { right, Right } ].	%% compose
+
+heatequation({ { temp, Temp }, { bound, Bound }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
+
+	%% heatequation(OldState, SystemParams, DT) -> NewState
 
 	{ Up, Down, Left, Right } = decomp_bound(Bound),
 
 	%% the if cluster 1.0, not proud of it
 	if
-		Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT, UC = 1 end;
+		Up =/= none -> Up ! { self(), cache }, receive { Up, { cache, UT } } -> UpTemp = UT, UC = 1 end;
 		true ->	UpTemp = 0, UC = 0
 	end,
 	if
-		Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT, DC = 1 end;
+		Down =/= none -> Down ! { self(), cache }, receive { Down, { cache, DT } } -> DownTemp = DT, DC = 1 end;
 		true ->	DownTemp = 0, DC = 0
 	end,
 	if
-		Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT, LC = 1 end;
+		Left =/= none -> Left ! { self(), cache }, receive { Left, { cache, LT } } -> LeftTemp = LT, LC = 1 end;
 		true ->	LeftTemp = 0, LC = 0
 	end,
 	if
-		Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT, RC = 1 end;
+		Right =/= none -> Right ! { self(), cache }, receive { Right, { cache, RT } } -> RightTemp = RT, RC = 1 end;
 		true ->	RightTemp = 0, RC = 0
 	end,
 
@@ -48,7 +54,7 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB } }, { { diff,
 	TempChange = Coef * Laplacian * DT,				%% the heat equation
 	NewTemp = Temp + TempChange,
 
-	{ { temp, NewTemp }, { bound, Bound }, { supervisor, BB } }.
+	{ { temp, NewTemp }, { bound, Bound }, { cache, Cache } }.
 
 beamlist([ ], BeamList) -> BeamList;
 

@@ -19,7 +19,7 @@ init(InitTemp) ->
 	%% initate a thermal node process with no boundaries
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
-	Bound = { bound, [ { up, none }, { down, none }, { left, none }, { right, none } ] },
+	Bound = { bound, nodefuns:comp_bound([ ]) },
 	Temp = { temp, InitTemp },
 
 	loop({ Temp, Bound, { supervisor, none } }).
@@ -34,7 +34,7 @@ init(InitTemp, Bound) ->
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
 	
-	loop({ Temp, { bound, Bound }, { supervisor, none } }).
+	loop({ Temp, { bound, nodefuns:comp_bound(Bound) }, { supervisor, none } }).
 
 loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 	
@@ -146,22 +146,24 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 			%% heat equation calc tour
 			
-			BB ! { self(), diff, dx },						%% I have questions, Big Brother
-			receive { BB, R } -> Response = R end,					%% waiting for answers, Big Brother
+			BB ! { self(), heatrequest },								%% I have questions, Big Brother
+			receive { BB, R } -> Response = R end,							%% waiting for answers, Big Brother
 
-			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
+			NewTemp = nodefuns:heatequation(Temp, Bound, { BB, Response }, DT),			%% the heat equation
 			
 			%% continue the tour
 			DirTuple = lists:keyfind(Dir, 1, Bound),
 			if
-				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);	%% going down
-				true -> { Dir, NextNode } = DirTuple, NextDir = Dir		%% invert direction
+				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);			%% going down
+				true -> { Dir, NextNode } = DirTuple, NextDir = Dir				%% invert direction
 			end,
 			
 			if
 				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };
-				true -> io:format("DONE~n")
-			end;
+				true -> BB ! { self(), { evolve, done } }
+			end,
+
+			NewState = { { temp, NewTemp }, { bound, Bound }, { supervisor, BB } };
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			
