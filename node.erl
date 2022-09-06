@@ -21,8 +21,10 @@ init(InitTemp) ->
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Bound = { bound, nodefuns:comp_bound([ ]) },
 	Temp = { temp, InitTemp },
+	Supervisor = { supervisor, none },
+	Cache = { cache, InitTemp },
 
-	loop({ Temp, Bound, { supervisor, none } }).
+	loop({ Temp, Bound, Supervisor, Cache }).
 
 init(InitTemp, Bound) ->
 
@@ -33,10 +35,13 @@ init(InitTemp, Bound) ->
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
+	BoundTuple = { bound, nodefuns:comp_bound(Bound) },
+	Supervisor = { supervisor, none },
+	Cache = { cache, InitTemp },
 	
-	loop({ Temp, { bound, nodefuns:comp_bound(Bound) }, { supervisor, none } }).
+	loop({ Temp, BoundTuple, Supervisor, Cache }).
 
-loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
+loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } = State) ->
 	
 	%% STATE:
 	%%
@@ -48,7 +53,8 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 	%% 		{ left, PID },
 	%% 		{ right, PID } 
 	%% 	] },
-	%% 	{ supervisor, BB }
+	%% 	{ supervisor, BB },
+	%% 	{ cache, Cache }
 	%% }
 
 	{ Up, Down, Left, Right } = nodefuns:decomp_bound(Bound),
@@ -57,9 +63,9 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 		{ dev, { newstate, NewStateReq } } -> NewState = NewStateReq;
 
-		{ dev, { newtemp, NewTemp } } -> NewState = { { temp, NewTemp }, { bound, Bound }, { supervisor, BB } };
+		{ dev, { newtemp, NewTemp } } -> NewState = { { temp, NewTemp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } };
 
-		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
+		{ dev, { newbound, NewBound } } -> NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB }, { cache, Cache } };
 
 		{ dev, { changebound, { Dir, NewPid } } } ->
 			
@@ -67,13 +73,13 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 			
 			NewPid ! { dev, { changebound_only, { dir:inv(Dir), self() } } },	%% say hello to the new neighbor
 
-			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
+			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB }, { cache, Cache } };
 
 		{ dev, { changebound_only, { Dir, NewPid } } } ->
 
 			NewBound = lists:keyreplace(Dir, 1, Bound, { Dir, NewPid }),		%% goodbye old neighbor, again
 												%% no hello this time
-			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB } };
+			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB }, { cache, Cache } };
 
 		{ dev, pos } ->
 
@@ -140,30 +146,36 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB } } = State) ->
 
 			NewState = State;
 
-		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client } };
+		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client }, { cache, Cache } };
 
 		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
 
 			%% heat equation calc tour
 			
-			BB ! { self(), heatrequest },								%% I have questions, Big Brother
-			receive { BB, R } -> Response = R end,							%% waiting for answers, Big Brother
+			BB ! { self(), heatrequest },						%% I have questions, Big Brother
+			receive { BB, R } -> Response = R end,					%% waiting for answers, Big Brother
 
-			NewTemp = nodefuns:heatequation(Temp, Bound, { BB, Response }, DT),			%% the heat equation
+			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
 			
 			%% continue the tour
 			DirTuple = lists:keyfind(Dir, 1, Bound),
 			if
-				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);			%% going down
-				true -> { Dir, NextNode } = DirTuple, NextDir = Dir				%% invert direction
+				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);	%% going down
+				true -> { Dir, NextNode } = DirTuple, NextDir = Dir		%% invert direction
 			end,
 			
 			if
 				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };
 				true -> BB ! { self(), { evolve, done } }
-			end,
+			end;
 
-			NewState = { { temp, NewTemp }, { bound, Bound }, { supervisor, BB } };
+		{ Client, cache } when is_pid(Client) ->
+
+			Client ! { self(), { cache, Cache } },
+
+			NewState = State;
+
+		{ BB, { cache, reset } } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Temp } };
 
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			

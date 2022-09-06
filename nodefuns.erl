@@ -22,7 +22,7 @@ comp_bound(List) ->
 	{ Up, Down, Left, Right } = decomp_bound(List),				%% decompose
 	[ { up, Up }, { down, Down }, { left, Left }, { right, Right } ].	%% compose
 
-heatequation({ { temp, Temp }, { bound, Bound }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
+heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
 	%% heatequation(OldState, SystemParams, DT) -> NewState
 
@@ -54,7 +54,7 @@ heatequation({ { temp, Temp }, { bound, Bound }, { cache, Cache } }, { { diff, C
 	TempChange = Coef * Laplacian * DT,				%% the heat equation
 	NewTemp = Temp + TempChange,
 
-	{ { temp, NewTemp }, { bound, Bound }, { cache, Cache } }.
+	{ { temp, NewTemp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }.
 
 beamlist([ ], BeamList) -> BeamList;
 
