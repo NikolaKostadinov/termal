@@ -22,7 +22,7 @@ For time evolution, the node has to request the temperatures of its neighbors, t
 
 $$ \Delta T = \alpha \nabla^2 T \Delta t $$
 
-Here $\Delta T$ is the change in the temperature of the node. $\alpha$ is the diffusivity of the system. And $\Delta t$ is the time interval. $\nabla^2 T$ is the *Laplacian* of the temperature. It measures how close is the temperaure of the node to the average of its neighbours. The **Laplacian** operator can be calculated like this:
+Here $\Delta T$ is the change in the temperature of the node. $\alpha$ is the diffusivity of the system. And $\Delta t$ is the time interval. $\nabla^2 T$ is the **Laplacian** of the temperature. It measures how close is the temperaure of the node to the average of its neighbours. The **Laplacian** operator can be calculated like this:
 
 $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - 4T \right) $$
 
@@ -45,7 +45,7 @@ $ chmod +x ./compiler.sh
 $ ./compiler.sh
 ```
 
-This script compiles every erlang module in the repository. Now, you can open the erlang shell with the ``erl`` command and use the ``node`` and ``bigbrother`` modules.
+This script compiles every erlang module in the repository. Now, you can open the erlang shell with the ``erl`` command and use the ``node``, ``bigbrother`` and ``therm`` modules.
 
 ## The Simulator
 
