@@ -69,6 +69,8 @@ X = therm:basis(Start, DX, End).
 ```
 
 > Note: The TPLS uses 1 mm as 1 unit length and 1 s for 1 unit time. For temperature the TPLS uses Kelvin. This means that the basis ``X`` starts from -1 mm and ends in 1 mm. The distance between the nodes is 0.1 mm.
+> 
+> I will comment the units of a variable when it is initialized.
 
 Let's use $T \left(x\right) = 20 e^{-x^2} + 300$. To get the temperatures of the beam, we will use ``therm:beam/2`` function:
 
