@@ -33,6 +33,8 @@ where $\sum{\partial T}$ means *the sum of its neighbors*.
 > This is not a generalized formula for the Laplacian. For the general case let $n \left(\partial T \right)$ be the number of neighbors. Then the general Laplacian is:
 >
 > $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - n \left( \partial T \right) T \right) $$
+>
+> This is the actual forumla used in the TPLS.
 
 ## The Setup
 
