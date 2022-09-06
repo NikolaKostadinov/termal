@@ -61,35 +61,39 @@ BB = bigbrother:start(Material).
 For simplisity we will simulate how the temperature of a beam evolves. Let's create a basis. It will begin in $x = -1$ and it will end in $x = 1$. We will use $\Delta x = 0.1$:
 
 ```erlang
-Start = -1,
-End = 1,
-DX = 0.1,
+Start = -1,		% mm
+End = 1,		% mm
+DX = 0.1,		% mm
 
 X = therm:basis(Start, DX, End).
 ```
 
+> Note: The TPLS uses 1 mm as 1 unit length and 1 s for 1 unit time. For temperature the TPLS uses Kelvin. This means that the basis ``X`` starts from -1 mm and ends in 1 mm. The distance between the nodes is 0.1 mm.
+
 Let's use $T \left(x\right) = 20 e^{-x^2} + 300$. To get the temperatures of the beam, we will use ``therm:beam/2`` function:
 
 ```erlang
-F = fun (X) -> 20 * math:exp( - X * X ) + 300 end,
-T = therm:beam(F, X).
+F = fun
+	(X) -> 20 * math:exp( - X * X ) + 300
+end,
+T = therm:beam(F, X).	%% K
 ```
 
-Now let's create the processes. We will message the ``bigbrother`` process as developers:
+Now let's create the processes. We will message the ``bigbrother`` process as developers. We will tall Big Brother to create a beam with temperatures ``T``:
 
 ```erlang
 BB ! { dev, { start, { beam, T } } }.
 ```
 
-Now we are ready to simulate the system. Simply message the supervisor like this:
+Now we are ready to simulate how the temperatures of the beam will evolve. Simply message the supervisor like this:
 
 ```erlang
-DT = 0.1,
+DT = 0.1,		%% s
 BB ! { dev, { evolve, DT } }.
 ```
 
 This will evolve the state with $\Delta t = 0.1$ seconds.
 
-> Note: Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers.
+> Note: Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers. I case you want more formal warning:
 >
 > $$ 1 \gg \Delta t > 0 $$
