@@ -1,32 +1,11 @@
 -module(nodefuns).
 -compile(export_all).
 
-decomp_bound(Bound) ->
-
-	%% tuple or false
-	UpTuple = lists:keyfind(up, 1, Bound),
-	DownTuple = lists:keyfind(down, 1, Bound),
-	LeftTuple = lists:keyfind(left, 1, Bound),
-	RightTuple = lists:keyfind(right, 1, Bound),
-
-	%% false is none
-	if not UpTuple -> Up = none; true -> { up, Up } = UpTuple end,
-	if not DownTuple -> Down = none; true -> { down, Down } = DownTuple end,
-	if not LeftTuple -> Left = none; true -> { left, Left } = LeftTuple end,
-	if not RightTuple -> Right = none; true -> { right, Right } = RightTuple end,
-	
-	{ Up, Down, Left, Right }.
-
-comp_bound(List) ->
-
-	{ Up, Down, Left, Right } = decomp_bound(List),				%% decompose
-	[ { up, Up }, { down, Down }, { left, Left }, { right, Right } ].	%% compose
-
 heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
 	%% heatequation(OldState, SystemParams, DT) -> NewState
 
-	{ Up, Down, Left, Right } = decomp_bound(Bound),
+	{ Up, Down, Left, Right } = boundfuns:decomp(Bound),
 
 	%% the if cluster 1.0, not proud of it
 	if
@@ -63,7 +42,8 @@ beamlist(TempList, BeamList) ->
 	[ HeadTemp | TempTail ] = TempList,
 	LastNode = lists:last(BeamList),
 
-	Node = node:start(HeadTemp, [ { up, none }, { down, none }, { left, LastNode }, { right, none } ]),	%% i will simplify this, i promise
+	Bound = boundfuns:comp([ { left, LastNode } ]),
+	Node = node:start(HeadTemp, Bound),
 
 	NewBeamList = BeamList ++ [ Node ],
 	beamlist(TempTail, NewBeamList).
@@ -72,7 +52,7 @@ beam(TempList) ->
 
 	[ OriginTemp | TempTail ] = TempList,
 	Origin = node:start(OriginTemp),
-	beamlist(TempTail, [ Origin ]).		%% evil recursion
+	beamlist(TempTail, [ Origin ]).					%% evil recursion
 
 sheetmatrix([ ], NodeMatrix) -> NodeMatrix;
 
@@ -91,4 +71,4 @@ sheet(TempMatrix) ->
 
 	[ FirstTempRow | TailRows ] = TempMatrix,
 	FirstNodes = beam(FirstTempRow),
-	sheetmatrix(TailRows, [ FirstNodes ]).	%% devil recursion
+	sheetmatrix(TailRows, [ FirstNodes ]).				%% devil recursion

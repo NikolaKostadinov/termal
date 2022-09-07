@@ -19,7 +19,7 @@ init(InitTemp) ->
 	%% initate a thermal node process with no boundaries
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
-	Bound = { bound, nodefuns:comp_bound([ ]) },
+	Bound = { bound, boundfuns:comp([ ]) },
 	Temp = { temp, InitTemp },
 	Supervisor = { supervisor, none },
 	Cache = { cache, InitTemp },
@@ -35,7 +35,7 @@ init(InitTemp, Bound) ->
 
 	io:format("Node ~p started with ~p °K ~n", [ self(), InitTemp ]),
 	Temp = { temp, InitTemp },
-	BoundTuple = { bound, nodefuns:comp_bound(Bound) },
+	BoundTuple = { bound, boundfuns:comp(Bound) },
 	Supervisor = { supervisor, none },
 	Cache = { cache, InitTemp },
 	
@@ -57,7 +57,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 	%% 	{ cache, Cache }
 	%% }
 
-	{ Up, Down, Left, Right } = nodefuns:decomp_bound(Bound),
+	{ Up, Down, Left, Right } = boundfuns:decomp(Bound),
 
 	receive
 
