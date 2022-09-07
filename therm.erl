@@ -22,6 +22,8 @@ mesh(X, Y) when is_list(X), is_list(Y) ->
 
 mesh(_, _) -> error(badarg).
 
+square(X) -> mesh(X, X).
+
 beam(F, X) when is_function(F), is_list(X) -> lists:map(F, X);
 beam(_, _) -> error(badarg).
 

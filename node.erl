@@ -1,6 +1,8 @@
 -module(node).
 -export([ start/1, init/1, start/2, init/2 ]).
 
+-define(EMPTY, n).
+
 start(InitTemp) ->
 	
 	%% start a thermal node with no boundaries  
@@ -125,13 +127,11 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 			%%        |
 			%%       ( )
 
-			Empty = n,
-
 			%% the if cluster 2.0
-			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = Empty end,
-			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = Empty end,
-			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = Empty end,
-			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = Empty end,
+			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = ?EMPTY end,
+			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = ?EMPTY end,
+			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = ?EMPTY end,
+			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = ?EMPTY end,
 
 			%% console art
 			io:format("      (~p°K)~n         |~n", [ UpTemp ]),
@@ -154,9 +154,9 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 			
 			BB ! { self(), heatrequest },						%% I have questions, Big Brother
 			receive { BB, R } -> Response = R end,					%% waiting for answers, Big Brother
-
-			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
 			
+			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
+		
 			%% continue the tour
 			DirTuple = lists:keyfind(Dir, 1, Bound),
 			if
@@ -170,7 +170,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 			end;
 
 		{ Client, cache } when is_pid(Client) ->
-
+			
 			Client ! { self(), { cache, Cache } },
 
 			NewState = State;

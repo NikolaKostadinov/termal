@@ -24,7 +24,7 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Ca
 		Right =/= none -> Right ! { self(), cache }, receive { Right, { cache, RT } } -> RightTemp = RT, RC = 1 end;
 		true ->	RightTemp = 0, RC = 0
 	end,
-
+	
 	%% the core
 	Counter = UC + DC + LC + RC,					%% how many neighbors ?
 	BoundarySum = UpTemp + DownTemp + LeftTemp + RightTemp,
