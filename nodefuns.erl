@@ -6,23 +6,39 @@ heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Ca
 	%% heatequation(OldState, SystemParams, DT) -> NewState
 
 	{ Up, Down, Left, Right } = boundfuns:decomp(Bound),
-
+	
 	%% the if cluster 1.0, not proud of it
 	if
-		Up =/= none -> Up ! { self(), cache }, receive { Up, { cache, UT } } -> UpTemp = UT, UC = 1 end;
-		true ->	UpTemp = 0, UC = 0
+		Up =/= none ->
+			Up ! { self(), cache },
+			receive { Up, { cache, UT } } -> UpTemp = UT, UC = 1 end;
+		true ->
+			UpTemp = 0,
+			UC = 0
 	end,
 	if
-		Down =/= none -> Down ! { self(), cache }, receive { Down, { cache, DT } } -> DownTemp = DT, DC = 1 end;
-		true ->	DownTemp = 0, DC = 0
+		Down =/= none ->
+			Down ! { self(), cache },
+			receive { Down, { cache, DT } } -> DownTemp = DT, DC = 1 end;
+		true ->
+			DownTemp = 0,
+			DC = 0
 	end,
 	if
-		Left =/= none -> Left ! { self(), cache }, receive { Left, { cache, LT } } -> LeftTemp = LT, LC = 1 end;
-		true ->	LeftTemp = 0, LC = 0
+		Left =/= none ->
+			Left ! { self(), cache },
+			receive { Left, { cache, LT } } -> LeftTemp = LT, LC = 1 end;
+		true ->
+			LeftTemp = 0,
+			LC = 0
 	end,
 	if
-		Right =/= none -> Right ! { self(), cache }, receive { Right, { cache, RT } } -> RightTemp = RT, RC = 1 end;
-		true ->	RightTemp = 0, RC = 0
+		Right =/= none ->
+			Right ! { self(), cache },
+			receive { Right, { cache, RT } } -> RightTemp = RT, RC = 1 end;
+		true ->
+			RightTemp = 0,
+			RC = 0
 	end,
 	
 	%% the core
