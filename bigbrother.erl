@@ -28,6 +28,7 @@ init(Material) ->
 	io:format("diffusity: ~p mm^2/s~n", [ Coef ]),
 	io:format("====================~n"),
 
+	process_flag(trap_exit, true),
 	loop(State).
 
 loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
@@ -43,7 +44,6 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		
 		{ dev, { start, { beam, TempList } } } ->
 			
-			[ unlink(N) || N <- Nodes ],
 			NewNodes = nodefuns:beam(TempList),
 			[ link(N) || N <- NewNodes ],
 			[ N ! { self(), supervise } || N <- NewNodes ],
@@ -52,7 +52,6 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		
 		{ dev, { start, { sheet, TempMatrix } } } ->
 
-			[ unlink(N) || N <- Nodes ],
 			NodeMatrix = nodefuns:sheet(TempMatrix),
 			NewNodes = lists:flatten(NodeMatrix),
 			[ link(N) || N <- NewNodes ],
@@ -77,6 +76,12 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		{ Client, heatrequest } when is_pid(Client) ->
 
 			Client ! { self(), { { diff, Coef }, { dx, DX } } },
+
+			NewState = State;
+		
+		{ 'EXIT', Node, _ } ->
+
+			io:format("~p died~n", [ Node ]),
 
 			NewState = State;
 

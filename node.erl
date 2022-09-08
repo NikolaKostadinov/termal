@@ -83,6 +83,12 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 												%% no hello this time
 			NewState = { { temp, Temp }, { bound, NewBound }, { supervisor, BB }, { cache, Cache } };
 
+		{ dev, kill } ->
+
+			exit(kill),
+
+			NewState = State;
+
 		{ dev, pos } ->
 
 			if
