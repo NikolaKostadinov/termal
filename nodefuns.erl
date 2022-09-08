@@ -1,48 +1,55 @@
 -module(nodefuns).
 -compile(export_all).
 
+get_prop(none, _) -> false;
+
+get_prop(Node, Prop) ->
+
+	Node ! { self(), Prop },
+	receive
+		{ Node, { Prop, Value } } -> Value;
+		_ -> false
+	end.
+
+get_temp(Node) -> get_prop(Node, temp).
+
+get_bound(Node) -> get_prop(Node, bound).
+
+get_cache(Node) -> get_prop(Node, cache).
+
+is_neighbour(ThisNode, OtherNode) ->
+
+	%% check if OtherNode is ThisNode's neighbour
+	
+	Bound = get_bound(ThisNode),
+
+	lists:keymember(OtherNode, 2, Bound).
+
+are_neighbours(ThisNode, OtherNode) -> is_neighbour(ThisNode, OtherNode) and is_neighbour(OtherNode, ThisNode).
+
 heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
 	%% heatequation(OldState, SystemParams, DT) -> NewState
 
 	{ Up, Down, Left, Right } = boundfuns:decomp(Bound),
 	
-	%% the if cluster 1.0, not proud of it
-	if
-		Up =/= none ->
-			Up ! { self(), cache },
-			receive { Up, { cache, UT } } -> UpTemp = UT, UC = 1 end;
-		true ->
-			UpTemp = 0,
-			UC = 0
+	TempCounter = fun (Node) ->					%% get temp-counter pair
+			 
+		NodeTemp = get_temp(Node),
+		if
+			not NodeTemp -> { 0, 0 };
+			true -> { NodeTemp, 1 }
+		end
+
 	end,
-	if
-		Down =/= none ->
-			Down ! { self(), cache },
-			receive { Down, { cache, DT } } -> DownTemp = DT, DC = 1 end;
-		true ->
-			DownTemp = 0,
-			DC = 0
-	end,
-	if
-		Left =/= none ->
-			Left ! { self(), cache },
-			receive { Left, { cache, LT } } -> LeftTemp = LT, LC = 1 end;
-		true ->
-			LeftTemp = 0,
-			LC = 0
-	end,
-	if
-		Right =/= none ->
-			Right ! { self(), cache },
-			receive { Right, { cache, RT } } -> RightTemp = RT, RC = 1 end;
-		true ->
-			RightTemp = 0,
-			RC = 0
-	end,
-	
+
+	{ UpTemp, UpCounter } = TempCounter(Up), 
+	{ DownTemp, DownCounter } = TempCounter(Down), 
+	{ LeftTemp, LeftCounter } = TempCounter(Left), 
+	{ RightTemp, RightCounter } = TempCounter(Right), 
+
 	%% the core
-	Counter = UC + DC + LC + RC,					%% how many neighbors ?
+	Counter = UpCounter + DownCounter + LeftCounter + RightCounter,	%% how many neighbors ?
 	BoundarySum = UpTemp + DownTemp + LeftTemp + RightTemp,
 	Laplacian = ( BoundarySum - Counter * Temp ) / ( DX * DX ),	%% aka the inverse triangle guy
 

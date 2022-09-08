@@ -133,11 +133,10 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 			%%        |
 			%%       ( )
 
-			%% the if cluster 2.0
-			if Up =/= none -> Up ! { self(), temp }, receive { Up, { temp, UT } } -> UpTemp = UT end; true -> UpTemp = ?EMPTY end,
-			if Down =/= none -> Down ! { self(), temp }, receive { Down, { temp, DT } } -> DownTemp = DT end; true -> DownTemp = ?EMPTY end,
-			if Left =/= none -> Left ! { self(), temp }, receive { Left, { temp, LT } } -> LeftTemp = LT end; true -> LeftTemp = ?EMPTY end,
-			if Right =/= none -> Right ! { self(), temp }, receive { Right, { temp, RT } } -> RightTemp = RT end; true -> RightTemp = ?EMPTY end,
+			UpTemp = nodefuns:get_temp(Up),
+			DownTemp = nodefuns:get_temp(Down),
+			LeftTemp = nodefuns:get_temp(Left),
+			RightTemp = nodefuns:get_temp(Right),
 
 			%% console art
 			io:format("      (~p°K)~n         |~n", [ UpTemp ]),
@@ -146,34 +145,38 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 
 			NewState = State;
 
+		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
+
+			%% heat equation calc tour
+			
+			BB ! { self(), heatrequest },									%% I have questions, Big Brother
+			receive { BB, R } -> Response = R end,								%% waiting for answers, Big Brother
+			
+			NewState = nodefuns:heatequation(State, Response, DT),						%% the heat equation
+		
+			%% continue the tour
+			DirTuple = lists:keyfind(Dir, 1, Bound),
+			if
+				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);				%% going down
+				true -> { Dir, NextNode } = DirTuple, NextDir = Dir					%% invert direction
+			end,
+
+			if
+				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };	%% let's do this again
+				true -> BB ! { self(), { evolve, done } }						%% done
+			end;
+
 		{ Client, temp } when is_pid(Client) ->
 			
 			Client ! { self(), { temp, Temp } },
 
 			NewState = State;
 
-		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client }, { cache, Cache } };
+		{ Client, bound } when is_pid(Client) ->
 
-		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
+			Client ! { self(), { bound, Bound } },
 
-			%% heat equation calc tour
-			
-			BB ! { self(), heatrequest },						%% I have questions, Big Brother
-			receive { BB, R } -> Response = R end,					%% waiting for answers, Big Brother
-			
-			NewState = nodefuns:heatequation(State, Response, DT),			%% the heat equation
-		
-			%% continue the tour
-			DirTuple = lists:keyfind(Dir, 1, Bound),
-			if
-				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);	%% going down
-				true -> { Dir, NextNode } = DirTuple, NextDir = Dir		%% invert direction
-			end,
-			
-			if
-				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };
-				true -> BB ! { self(), { evolve, done } }
-			end;
+			NewState = State;
 
 		{ Client, cache } when is_pid(Client) ->
 			
@@ -183,6 +186,8 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 
 		{ BB, { cache, reset } } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Temp } };
 
+		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client }, { cache, Cache } };
+		
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			
 			if

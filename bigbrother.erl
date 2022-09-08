@@ -83,6 +83,8 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 			io:format("~p died~n", [ Node ]),
 
+			[ N || N <- Nodes ],
+
 			NewState = State;
 
 		Any ->
