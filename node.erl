@@ -141,7 +141,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 			NewState = State;
 
 		{ Client, temp } when is_pid(Client) ->
-
+			
 			Client ! { self(), { temp, Temp } },
 
 			NewState = State;
@@ -172,7 +172,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 		{ Client, cache } when is_pid(Client) ->
 			
 			Client ! { self(), { cache, Cache } },
-
+			
 			NewState = State;
 
 		{ BB, { cache, reset } } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Temp } };
