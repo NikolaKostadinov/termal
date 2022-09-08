@@ -10,7 +10,7 @@ The **TPLS** uses a **lattice** of erlang **processes** (*shortly: nodes*) which
 
 ## The Scheme
 
-In the schemes every node is represented by a circle. The lines are logical connections. This is how the lattice looks like:
+This is how the TPLS operates. In the blueprint every node is represented by a circle. The lines are logical connections. This is how the lattice looks like:
 
 <img src="./assets/lattice.svg">
 
@@ -35,6 +35,10 @@ Where $\sum{\partial T}$ means *the sum of its neighbors*. $\Delta x$ is the dis
 > $$ \nabla^2 T = \frac{1}{\Delta x^2} \left( \sum{\partial T} - n \left( \partial T \right) T \right) $$
 >
 > This is the actual forumla used in the TPLS.
+
+To calculate every node's new temperature we have to traverse the lattice. The algorithm for this looks like this scheme:
+
+<img src="./assets/algrth.svg">
 
 ## The Setup
 
