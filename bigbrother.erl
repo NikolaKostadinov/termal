@@ -81,9 +81,13 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		
 		{ 'EXIT', Node, _ } ->
 
-			io:format("~p died~n", [ Node ]),
+			io:format("~p died~n", [ Node ]),	%% DEV STUFF
 
-			[ N || N <- Nodes ],
+			Neighbours = [ N || N <- Nodes, nodefuns:is_neighbour(N, Node) ],
+			NeighbourTemps = [ nodefuns:get_temp(N) || N <- Neighbours ],
+
+			NewTemp = lists:sum(NeighbourTemps) / length(NeighbourTemps),
+			NewNode = node:start(NewTemp),
 
 			NewState = State;
 

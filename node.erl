@@ -1,8 +1,6 @@
 -module(node).
 -export([ start/1, init/1, start/2, init/2 ]).
 
--define(EMPTY, n).
-
 start(InitTemp) ->
 	
 	%% start a thermal node with no boundaries  
@@ -186,7 +184,7 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 
 		{ BB, { cache, reset } } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Temp } };
 
-		{ Client, supervise } -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client }, { cache, Cache } };
+		{ Client, supervise } when is_pid(Client) -> NewState = { { temp, Temp }, { bound, Bound }, { supervisor, Client }, { cache, Cache } };
 		
 		{ Client, { myposx, N } } when is_pid(Client) ->
 			

@@ -17,15 +17,15 @@ get_bound(Node) -> get_prop(Node, bound).
 
 get_cache(Node) -> get_prop(Node, cache).
 
+is_neighbour(Node, Node) -> false;
+
 is_neighbour(ThisNode, OtherNode) ->
 
 	%% check if OtherNode is ThisNode's neighbour
 	
 	Bound = get_bound(ThisNode),
-
+	
 	lists:keymember(OtherNode, 2, Bound).
-
-are_neighbours(ThisNode, OtherNode) -> is_neighbour(ThisNode, OtherNode) and is_neighbour(OtherNode, ThisNode).
 
 heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
