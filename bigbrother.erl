@@ -66,6 +66,17 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			
 			NewState = State;
 		
+		{ dev, log } ->
+
+			io:format("====================~n"),
+			io:format("Big Brother PID: ~p~n", [ self() ]),
+			io:format("nodes: ~p~n", [ Nodes ]),
+			io:format("diff: ~p~n", [ Coef ]),
+			io:format("dx: ~p~n", [ DX ]),
+			io:format("====================~n"),
+
+			NewState = State;
+
 		{ Client, { evolve, done } } when is_pid(Client) ->
 
 			[ N ! { self(), { cache, reset } } || N <- Nodes ],
@@ -81,15 +92,18 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 		
 		{ 'EXIT', Node, _ } ->
 
-			io:format("~p died~n", [ Node ]),	%% DEV STUFF
-
 			Neighbours = [ N || N <- Nodes, nodefuns:is_neighbour(N, Node) ],
+			NeighbourDirs = [ nodefuns:rel_dir(N, Node) || N <- Neighbours ],
 			NeighbourTemps = [ nodefuns:get_temp(N) || N <- Neighbours ],
 
-			NewTemp = lists:sum(NeighbourTemps) / length(NeighbourTemps),
-			NewNode = node:start(NewTemp),
+			NewTemp = lists:sum(NeighbourTemps) / length(NeighbourTemps),				%% get average temp
+			NewBound = [ { dir:inv(D), N } || { D, N } <- lists:zip(NeighbourDirs, Neighbours) ],	%% get new node bounds
 
-			NewState = State;
+			NewNode = node:start(NewTemp, NewBound),
+			link(NewNode),
+			NewNodes = ( Nodes -- [ Node ] ) ++ [ NewNode ],					%% replace old node
+
+			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 
 		Any ->
 

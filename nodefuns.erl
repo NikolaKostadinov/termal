@@ -27,6 +27,18 @@ is_neighbour(ThisNode, OtherNode) ->
 	
 	lists:keymember(OtherNode, 2, Bound).
 
+rel_dir(ThisNode, OtherNode) ->
+
+	%% relative direction
+	
+	Bound = get_bound(ThisNode),
+
+	Tuple = lists:keyfind(OtherNode, 2, Bound),
+	if
+		not Tuple -> none;
+		true -> { Dir, OtherNode } = Tuple, Dir
+	end.
+
 heatequation({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } }, { { diff, Coef }, { dx, DX } }, DT) ->
 
 	%% heatequation(OldState, SystemParams, DT) -> NewState
