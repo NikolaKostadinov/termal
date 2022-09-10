@@ -76,6 +76,13 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			io:format("====================~n"),
 
 			NewState = State;
+		
+		{ dev, vlog } ->
+
+			[ Origin | _ ] = Nodes,
+			Origin ! { dev, { vlog, { row, Origin } } },
+
+			NewState = State;
 
 		{ Client, { evolve, done } } when is_pid(Client) ->
 

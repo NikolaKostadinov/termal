@@ -143,6 +143,25 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 
 			NewState = State;
 
+		{ dev, { vlog, { row, Origin } } } ->
+
+			io:fwrite("(~p°K)\t", [ Temp ]),
+
+			if
+				Right =/= none ->
+					Right ! { dev, { vlog, { row, Origin } } };
+				true ->
+					io:format("~n~n"),
+					OriginBound = nodefuns:get_bound(Origin),
+					{ down, LowerOrigin } = lists:keyfind(down, 1, OriginBound),
+					if
+						LowerOrigin =/= none -> LowerOrigin ! { dev, { vlog, { row, LowerOrigin } } };
+						true -> io:format("~n")
+					end
+			end,
+
+			NewState = State;
+		
 		{ BB, { evolve, { { dir, Dir }, { dt, DT } } } } ->
 
 			%% heat equation calc tour
