@@ -64,6 +64,10 @@ Here is a table of the used materials in the TPLS and their coefficient:
 
 </center>
 
+> Note:
+>
+> The TPLS uses units of $mm^2/s$ for thermal diffusivity.
+
 ## The Setup
 
 The **TPLS** is build for Linux. It can be used on other OS, but you have to configure it manualy. Firstly, pull the source code. Then run the ``compiler.sh`` script:
