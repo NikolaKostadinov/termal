@@ -47,8 +47,7 @@ The thermal diffusivity coefficient is stored in Big Brother. For time evolution
 Here is a table of the used materials in the TPLS and their coefficient:
 
 <center>
-
-| Material | Thermal Diffusivity ( in mm^2^/s ) |
+| Material | Thermal Diffusivity |
 | ---: | :--- |
 | carbon | 216.6 |
 | silver | 165.63 |
@@ -61,7 +60,6 @@ Here is a table of the used materials in the TPLS and their coefficient:
 | glass | 0.34 |
 | brick | 0.27 |
 | rubber | 0.11 |
-
 </center>
 
 ## The Setup
