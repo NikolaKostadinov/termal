@@ -40,6 +40,26 @@ To calculate every node's new temperature we have to traverse the lattice. The a
 
 <img src="./assets/algrth.svg">
 
+Now let's talk about the supervisor: The Big Brother. He looks after all processes in the lattice. When a process exits Big Brother has to replace it. The temperature of the new process is the average of its neighours.
+
+The thermal diffusivity coefficient is stored in Big Brother. For time evolution every process has to request the coefficient for Big Brother.
+
+Here is a table of the used materials in the TPLS and their coefficient:
+
+| Material | Thermal Diffusivity |
+| ---: | :--- |
+| carbon | 216.6 |
+| silver | 165.63 |
+| gold | 127 |
+| copper | 111 |
+| aluminium | 97 |
+| silicon | 88 |
+| tin | 40 |
+| iron | 23 |
+| glass | 0.34 |
+| brick | 0.27 |
+| rubber | 0.11 |
+
 ## The Setup
 
 The **TPLS** is build for Linux. It can be used on other OS, but you have to configure it manualy. Firstly, pull the source code. Then run the ``compiler.sh`` script:

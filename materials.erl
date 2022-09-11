@@ -27,9 +27,9 @@ coef(tin) -> coef(sn);
 coef(fe) -> 23; %% fe == iron
 coef(iron) -> coef(fe);
 
-coef(brick) -> 0.27;
-
 coef(glass) -> 0.34;
+
+coef(brick) -> 0.27;
 
 coef(rubber) -> 0.11;
 
