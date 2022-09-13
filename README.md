@@ -84,6 +84,8 @@ This script compiles every erlang module in the repository. Now, you can open th
 
 ## The Simulator
 
+### The 1D Case
+
 Let's build a simulation. Firstly, we will initialize an "empty" ``bigbrother`` process:
 
 ```erlang
@@ -168,6 +170,8 @@ BB ! { dev, { nevolve, N, DT } }.
 ```
 
 Good. You did it! This wasn't hard was it?
+
+### The 2D Case
 
 How about a 2D simulation? 2D is the same as 1D except we have to include one more base. Let's see how to code this. Let's create two basis:
 
