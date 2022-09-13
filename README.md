@@ -129,14 +129,31 @@ BB ! { dev, { start, { beam, T } } }.
 Now we are ready to simulate how the temperatures of the beam will evolve. Simply message the supervisor like this:
 
 ```erlang
-DT = 0.1,		%% s
+DT = 0.01,		%% s
 BB ! { dev, { evolve, DT } }.
 ```
 
-This will evolve the state with $\Delta t = 0.1$ seconds.
+This will evolve the state with $\Delta t = 0.01$ seconds.
 
 > Note:
 >
 > Do not use big values for $\Delta t$. It will break the simulation. Try to use as small as possible value for $\Delta t$. Do not use zero or negative numbers. I case you want more formal warning:
 >
 > $$ 1 \gg \Delta t > 0 $$
+
+But this is a very slow time evolution. Let's speed things up. We will still use $\Delta t = 0.01$, but we will repeat the calculation many times. Let's use a total time of 1 second:
+
+$$ t = 1 $$
+
+To see how many times we have to do the simulation we will divide the total time by the time interval of one simulation:
+
+$$ N = \frac{t}{\delta t} $$
+
+For our case that is $N = 100$. This means: *"for every 1 second we have to do 100 simulations"*. It is challenging to send 100 messages manualy so we can bypass this this torture by sending this:
+
+```erlang
+TotalTime = 1,		%% s
+N = TotalTime / DT,
+
+BB ! { dev, { nevolve, N, DT } }.
+```
