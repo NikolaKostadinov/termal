@@ -166,3 +166,61 @@ N = TotalTime / DT,
 
 BB ! { dev, { nevolve, N, DT } }.
 ```
+
+Good. You did it! This wasn't hard was it?
+
+How about a 2D simulation? 2D is the same as 1D except we have to include one more base. Let's see how to code this. Let's create two basis:
+
+```erlang
+X = therm:base(-1, 0.1, 1),
+Y = therm:base(-2, 0.1, -2).
+```
+
+Here our X axis will start at $x = -1$ and end at $x = 1$ and the Y axis will start at $y = -2$ and end at $y = 2$.
+
+> Note:
+>
+> Both basis must have the same distanse between nodes:
+>
+> $$ \Delta x = \Delta y $$
+
+Now let's create a mesh basis. We will simply use the ``therm:mesh/2`` function. This will create a 2D list of all positions:
+
+```erlang
+Mesh = therm:mesh(X, Y).
+```
+
+> Note:
+>
+> You can use the ``therm:square/1`` function for ``X = Y`` cases. These lines of code are equivalent:
+>
+> ```erlang
+> Mesh = therm:mesh(X, X).
+> ```
+>
+> ```erlang
+> Mesh = therm:square(X).
+> ```
+
+In 2D our thermal function will look like this:
+
+```erlang
+F = fun	
+	({ X, Y }) -> 20 * math:exp( - X * X - Y * Y ) + 300
+end.
+```
+
+Let's apply this to our mesh using the ``therm:sheet/2`` function:
+
+```erlang
+T = therm:sheet(F, Mesh).
+```
+
+We are almost done. Let's send the temperatures and mesh to the Big Brother:
+
+```erlang
+BB ! { dev, { start, { sheet, T } } },
+BB ! { dev, { set, { mesh, Mesh } } }.
+```
+
+And we are done. The time evolution is the same as 1D so you know the drill.
