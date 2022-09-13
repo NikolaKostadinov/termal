@@ -73,8 +73,11 @@ Here is a table of the used materials in the TPLS and their coefficient:
 The **TPLS** is build for Linux. It can be used on other OS, but you have to configure it manualy. Firstly, pull the source code. Then run the ``compiler.sh`` script:
 
 ```console
-$ chmod +x ./compiler.sh
-$ ./compiler.sh
+chmod +x ./compiler.sh
+```
+
+```console
+./compiler.sh
 ```
 
 This script compiles every erlang module in the repository. Now, you can open the erlang shell with the ``erl`` command and use the ``node``, ``bigbrother`` and ``therm`` modules.
