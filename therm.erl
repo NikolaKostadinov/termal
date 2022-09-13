@@ -1,9 +1,9 @@
 -module(therm).
 -compile(export_all).
 
-basis(Start, DX, End) when is_number(Start), is_float(DX), is_number(End) ->
+base(Start, DX, End) when is_number(Start), is_float(DX), is_number(End) ->
 	
-	%% create a [ START, START + DX, ... START + N . DX, ... END ] basis for TPLS beam
+	%% create a [ START, START + DX, ... START + N . DX, ... END ] base for TPLS beam
 
 	Length = End - Start,
 	FloatingDescreteNumber = Length / DX,
@@ -11,8 +11,8 @@ basis(Start, DX, End) when is_number(Start), is_float(DX), is_number(End) ->
 
 	[ Start + N * DX || N <- lists:seq(0, DescreteNumber) ];
 
-basis(Start, DX, End) when is_integer(Start), is_integer(DX), is_integer(End) -> lists:seq(Start, End, DX);
-basis(_, _, _) -> error(badarg).
+base(Start, DX, End) when is_integer(Start), is_integer(DX), is_integer(End) -> lists:seq(Start, End, DX);
+base(_, _, _) -> error(badarg).
 
 mesh(X, Y) when is_list(X), is_list(Y) ->
 	

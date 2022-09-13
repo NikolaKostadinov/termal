@@ -97,14 +97,14 @@ Material = gold,
 BB = bigbrother:start(Material).
 ```
 
-For simplisity we will simulate how the temperature of a beam evolves. Let's create a basis. It will begin in $x = -1$ and it will end in $x = 1$. We will use $\Delta x = 0.1$:
+For simplisity we will simulate how the temperature of a beam evolves. Let's create a 1D basis. It will begin at $x = -1$ and it will end at $x = 1$. We will use $\Delta x = 0.1$:
 
 ```erlang
 Start = -1,		% mm
 End = 1,		% mm
 DX = 0.1,		% mm
 
-X = therm:basis(Start, DX, End).
+X = therm:base(Start, DX, End).
 ```
 
 > Note:
