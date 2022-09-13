@@ -141,13 +141,13 @@ This will evolve the state with $\Delta t = 0.01$ seconds.
 >
 > $$ 1 \gg \Delta t > 0 $$
 
-But this is a very slow time evolution. Let's speed things up. We will still use $\Delta t = 0.01$, but we will repeat the calculation many times. Let's use a total time of 1 second:
+Unfortunately this is a very slow time evolution. Let's speed things up. We will still use $\Delta t = 0.01$, but we will repeat the calculation many, many times. Let's use a total time of 1 second:
 
 $$ t = 1 $$
 
 To see how many times we have to do the simulation we will divide the total time by the time interval of one simulation:
 
-$$ N = \frac{t}{\delta t} $$
+$$ N = \frac{t}{\Delta t} $$
 
 For our case that is $N = 100$. This means: *"for every 1 second we have to do 100 simulations"*. It is challenging to send 100 messages manualy so we can bypass this this torture by sending this:
 
