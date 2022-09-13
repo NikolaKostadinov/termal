@@ -61,13 +61,19 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 
-		{ dev, { set, { basis, X } } } when is_list(X) ->
+		{ dev, { set, { base, X } } } when is_list(X) ->
 
 			[ X0, X1 | _ ] = X,	%% not the best way, but works for basis
 			NewDX = X1 - X0,
 
 			NewState = { { diff, Coef }, { dx, NewDX }, { nodes, Nodes } };
+		
+		{ dev, { set, { mesh, M } } } when is_list(M) ->
 
+			[ [ X0, X1 | _ ] | _ ] = M,
+			NewDX = X1 - X0,
+
+			NewState = { { diff, Coef }, { dx, NewDX }, { nodes, Nodes } };
 
 		{ dev, { evolve, DT } } when is_number(DT) ->
 
