@@ -1,6 +1,8 @@
 -module(bigbrother).
 -export([ start/0, start/1, init/1 ]).
 
+-define(DEFAULT_MATERIAL, iron).
+
 start(Material) when is_atom(Material) ->
 
 	%% start the supervisor process with an arbitrary diffusivity
@@ -13,7 +15,7 @@ start() ->
 
 	%% start the supervisor process with no diffusivity
 	
-	spawn(?MODULE, init, [ iron ]).
+	spawn(?MODULE, init, [ ?DEFAULT_MATERIAL ]).
 
 init(Material) ->
 	

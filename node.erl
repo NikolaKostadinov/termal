@@ -173,11 +173,11 @@ loop({ { temp, Temp }, { bound, Bound }, { supervisor, BB }, { cache, Cache } } 
 		
 			%% continue the tour
 			DirTuple = lists:keyfind(Dir, 1, Bound),
-			if
-				not DirTuple -> NextNode = Down, NextDir = dir:inv(Dir);				%% going down
-				true -> { Dir, NextNode } = DirTuple, NextDir = Dir					%% invert direction
+			case DirTuple of
+				{ _, none } -> NextNode = Down, NextDir = dir:inv(Dir);					%% going down
+				_ -> { Dir, NextNode } = DirTuple, NextDir = Dir					%% invert direction
 			end,
-
+			
 			if
 				NextNode =/= none -> NextNode ! { BB, { evolve, { { dir, NextDir }, { dt, DT } } } };	%% let's do this again
 				true -> BB ! { self(), { evolve, done } }						%% done
