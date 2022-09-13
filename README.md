@@ -120,10 +120,16 @@ end,
 T = therm:beam(F, X).	%% K
 ```
 
-Now let's create the processes. We will message the ``bigbrother`` process as developers. We will tall Big Brother to create a beam with temperatures ``T``:
+Now let's create the processes. We will message the ``bigbrother`` process as developers. We will tell Big Brother to create a beam with temperatures ``T``:
 
 ```erlang
 BB ! { dev, { start, { beam, T } } }.
+```
+
+Then we will tell him that we have used ``X`` as a basis:
+
+```erlang
+BB ! { dev, { set, { basis, X } } }.
 ```
 
 Now we are ready to simulate how the temperatures of the beam will evolve. Simply message the supervisor like this:

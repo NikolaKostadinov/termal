@@ -61,13 +61,37 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 
 			NewState = { { diff, Coef }, { dx, DX }, { nodes, NewNodes } };
 
-		{ dev, { evolve, DT } } ->
+		{ dev, { set, { basis, X } } } when is_list(X) ->
+
+			[ X0, X1 | _ ] = X,	%% not the best way, but works for basis
+			NewDX = X1 - X0,
+
+			NewState = { { diff, Coef }, { dx, NewDX }, { nodes, Nodes } };
+
+
+		{ dev, { evolve, DT } } when is_number(DT) ->
 
 			[ Origin | _ ] = Nodes,
 			Origin ! { self(), { evolve, { { dir, right }, { dt, DT } } } },
 			
 			NewState = State;
-		
+	
+		{ dev, { nevolve, 1, DT } } when is_number(DT) ->
+
+			self() ! { dev, { evolve, DT } },
+			
+			NewState = State;
+
+		{ dev, { nevolve, N, DT } } when is_number(DT), is_integer(N) ->
+
+			%% sorry doesn't work right now
+			%% i need more time for new logic
+
+			self() ! { dev, { evolve, DT } },
+			self() ! { dev, { nevolve, N - 1, DT } },
+
+			NewState = State;
+
 		{ dev, log } ->
 
 			io:format("====================~n"),
@@ -92,7 +116,7 @@ loop({ { diff, Coef }, { dx, DX }, { nodes, Nodes } } = State) ->
 			io:format("DONE~n"),
 
 			NewState = State;
-
+		
 		{ Client, heatrequest } when is_pid(Client) ->
 
 			Client ! { self(), { { diff, Coef }, { dx, DX } } },
