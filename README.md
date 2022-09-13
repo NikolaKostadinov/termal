@@ -134,7 +134,7 @@ BB ! { dev, { start, { beam, T } } }.
 Then we will tell him that we have used ``X`` as a basis:
 
 ```erlang
-BB ! { dev, { set, { basis, X } } }.
+BB ! { dev, { set, { base, X } } }.
 ```
 
 Now we are ready to simulate how the temperatures of the beam will evolve. Simply message the supervisor like this:
